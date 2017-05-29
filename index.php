@@ -1,186 +1,85 @@
-<?php 
-	/* Author: Saujan Dulal*/
+<?php
+session_start();
+require_once("class.user.php");
+$login = new USER();
 
-	include 'main.php';
-	$check  = new Main;
-	$get    = new Main;
-	$send   = new Main;
-   @$user_id = $_SESSION['user_id'];
-   	//fetching user data by user_id
-	$data  = $get->user_data($user_id);
-	// fetching posts from database
-	$post  = $get->posts();
-	//check user submit  data
-	if(isset($_POST['submit'])){
-		$status  = $_POST['status'];
-		//checking image if isset
-		if (isset($_FILES['post_image'])===true) {
-			//if image is not empty 
-			 if (empty($_FILES['post_image']['name']) ===true) {
-				if(!empty($status)===true){
-					$send->add_post($user_id,$status);
-				}
-			 	 }else {
-			 	 //checking image format                                                                                                       
-				 $allowed = array('jpg','jpeg','gif','png'); 
-				 $file_name = $_FILES['post_image']['name']; 
-				 $file_extn = strtolower(end(explode('.', $file_name)));
-				 $file_temp = $_FILES['post_image']['tmp_name'];
-				 
-				 if (in_array($file_extn, $allowed)===true) {
-				 	$file_parh = 'images/posts/' . substr(md5(time()), 0, 10).'.'.$file_extn;
-				   move_uploaded_file($file_temp, $file_parh);
-				   $send->add_post($user_id,$status,$file_parh);
+if($login->is_loggedin()!="")
+{
+	$login->redirect('home.php');
+}
 
-				 }else{
-				  echo 'incorrect File only Allowed with less then 1mb ';
-				  echo implode(', ', $allowed);
-				 }
-			 }
-			
-		}
-
+if(isset($_POST['btn-login']))
+{
+	$uname = strip_tags($_POST['txt_uname_email']);
+	$umail = strip_tags($_POST['txt_uname_email']);
+	$upass = strip_tags($_POST['txt_password']);
+		
+	if($login->doLogin($uname,$umail,$upass))
+	{
+		$login->redirect('home.php');
 	}
+	else
+	{
+		$error = "Wrong Details !";
+	}	
+}
 ?>
-<html>
-	<head>
-		<title>Posting System like Facebook</title>
-		 <link rel="stylesheet" href="components/bootstrap/dist/css/thisismycss.css" />
-   <script src="components/bootstrap/dist/js/jquery.js"></script>
-
-
-	</head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>HelpEachOther</title>
+<link href="components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="components/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet" media="screen">
+ <link rel="stylesheet" href="components/bootstrap/dist/css/style.css" />
+</head>
 <body>
-	<!-----------Head-------->
-<div class="head">
-	<div class="head-in">
-		<diV class="head-logo">
-			<h1 class="h-1">MeriBook</h1>
-		</div>
-		<div id="login">
-		<?php //check user is logged in or not
-			if($check->logged_in() === false){
-				include 'login.php';
-			}else{
-				echo '<div id="logout">
-					  <li><a href="logout.php">Logout</a>
-					 </div>';
-			} 
-		?>
-		</div>
-	</div>
-</div>
 
-<?php if($check->logged_in() === true){?>
+<div class="signin-form">
 
-	<div class="wrapper">		
-		<!--content -->
-		<div class="content">
-			<!--left-content-->
-			<div class="center">
-				<div class="posts">
-					<div class="create-posts">
- 					<form action="" method="post" enctype="multipart/form-data">
-						<div class="c-header">
-							<div class="c-h-inner">
-								<ul>	
-									<li style="border-right:none;"><img src="img/icon3.png"></img><a href="#">Update Status</a></li>
-									<li><input type="file"  onchange="readURL(this);" style="display:none;" name="post_image" id="uploadFile"></li>
-									<li><img src="img/icon1.png"></img><a href="#" id="uploadTrigger" name="post_image">Add Photos/Video</a></li>
-									<li style="border: none;"><img src="img/icon2.png"></img><a href="#">Create Photo Album</a></li>
-								</ul>
-							</div>
-						</div>
-						<div class="c-body">
-							<div class="body-left">
-								<div class="img-box">
-									<img src="<?php echo $data['profile_image'];?>"></img>
-									
-								</div>
-							</div>
-							<div class="body-right">
-								<textarea class="text-type" name="status" placeholder="What's on your mind?"></textarea>
-							</div>
-							<div id="body-bottom">
-							<img src="#"  id="preview"/>
-							</div>
-						</div>
-						<div class="c-footer">
-							<div class="right-box">
-								<ul>
-									<li><button class="btn1"><img class="iconw-margin" src="img/iconw.png"></img>Public<img class="iconp-margin" src="img/iconp.png"></img></button></li>
-									<li><input type="submit" name="submit" value="Post" class="btn2"/></li>
-								</ul>
-							</div>
-								
-							</div>
-						</div>
-						</div>
-						<script type="text/javascript">
-						 //Image Preview Function
-								$("#uploadTrigger").click(function(){
-								   $("#uploadFile").click();
-								});
-						        function readURL(input) {
-						            if (input.files && input.files[0]) {
-						                var reader = new FileReader();
-
-						                reader.onload = function (e) {
-						                	$('#body-bottom').show();
-						                    $('#preview').attr('src', e.target.result);
-						                }
-
-						                reader.readAsDataURL(input.files[0]);
-						            }
-						        }
-
-						</script>
-						<?php foreach($post as $row){
-							//fetching all posts
-							$time_ago = $row['status_time'];
-						echo '
-						<div class="post-show">
-									<div class="post-show-inner">
-										<div class="post-header">
-											<div class="post-left-box">
-												<div class="id-img-box"><img src="'.$row['profile_image'].'"></img></div>
-												<div class="id-name">
-													<ul>
-														<li><a href="#">'.$row['username'].'</a></li>
-														<li><small>'.$get->timeAgo($time_ago).'</small></li>
-													</ul>
-												</div>
-											</div>
-											<div class="post-right-box"></div>
-										</div>
-									
-											<div class="post-body">
-											<div class="post-header-text">
-												'.$row['status'].'
-											</div>'.( ($row['status_image'] != 'NULL') ? '<div class="post-img">
-												<img src="'.$row['status_image'].'"></img></div>' : '').'
-											<div class="post-footer">
-												<div class="post-footer-inner">
-													<ul>
-														<li><a href="#">Like</a></li>
-														<li><a href="#">Comment</a></li>
-														<li><a href="#">Share</a></li>
-													</ul>	
-												</div>
-											</div>
-										</div>
-									</div>
-								</div><br> ';	
-					}	
+	<div class="container">
+     
+        
+       <form class="form-signin" method="post" id="login-form">
+      
+        <h2 class="form-signin-heading"></h2><hr />
+        
+        <div id="error">
+        <?php
+			if(isset($error))
+			{
 				?>
-					</div>
-					</form>	
-													
-			</div>
+                <div class="alert alert-danger">
+                   <i class="glyphicon glyphicon-warning-sign"></i> &nbsp; <?php echo $error; ?> !
+                </div>
+                <?php
+			}
+		?>
+        </div>
+        
+        <div class="form-group">
+        <input type="text" class="form-control" name="txt_uname_email" placeholder="Username or E mail ID" required />
+        <span id="check-e"></span>
+        </div>
+        
+        <div class="form-group">
+        <input type="password" class="form-control" name="txt_password" placeholder="Your Password" />
+        </div>
+       
+     	<hr />
+        
+        <div class="form-group">
+            <button type="submit" name="btn-login" class="btn btn-default">
+                	<i class="glyphicon glyphicon-log-in"></i> &nbsp; SIGN IN
+            </button>
+        </div>  
+      	<br />
+            <label>Don't have account yet ! <a href="sign-up.php">Sign Up</a></label>
+      </form>
 
- 
-
+    </div>
+    
 </div>
-<?php }?>
+
 </body>
 </html>

@@ -3,9 +3,9 @@
 		//login function 
 		public function login($username,$password){
 			global $pdo;
-	 		$query = $pdo->prepare("SELECT * from Registraion WHERE name = ? and password = ?");
-			$query->bindValue($username);
-			$query->bindValue($password);
+	 		$query = $pdo->prepare("SELECT * from users WHERE username = ? and password = ?");
+			$query->bindValue(1,$username);
+			$query->bindValue(2,$password);
 			$query->execute();
 		    $rows = $query->fetch(PDO::FETCH_NUM);
 
@@ -45,7 +45,7 @@
 		//fetch user data by user id 
 		public function user_data($user_id){
 			global $pdo;
-			$query = $pdo->prepare('SELECT * FROM Registraion WHERE usr_id = ?');
+			$query = $pdo->prepare('SELECT * FROM users WHERE user_id = ?');
 			$query->bindvalue(1,$user_id);
 			$query->execute();
 
