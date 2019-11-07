@@ -1,21 +1,29 @@
+<?php 
+    include("dbconfig.php");
+?>
 <?php
-session_start();
-require_once('class.user.php');
-$user = new USER();
-
-if($user->is_loggedin()!="")
-{
-	$user->redirect('home.php');
-}
-
 if(isset($_POST['btn-signup']))
 {
 	$uname = strip_tags($_POST['txt_uname']);
 	$umail = strip_tags($_POST['txt_umail']);
-	$upass = strip_tags($_POST['txt_upass']);	
+	$upass = strip_tags($_POST['txt_upass']);
+	$pic=$_FILES["img"]["name"];
+    $tmp=$_FILES["img"]["tmp_name"];
+    $type=$_FILES["img"]["type"];
+   
+      
+    $path="user_images/".$pic;
+	$icon="warning";
+	$class="danger";
 	
 	if($uname=="")	{
 		$error[] = "provide username !";	
+	}
+	else if($type=="application/pdf" || $type=="application/pdf" || $type=="application/x-zip-compressed")	{
+		$error[] = "this type of file does not supported !";	
+	}
+	else if($pic=="")	{
+		$error[] = "Select Image !";	
 	}
 	else if($umail=="")	{
 		$error[] = "provide email id !";	
@@ -31,28 +39,14 @@ if(isset($_POST['btn-signup']))
 	}
 	else
 	{
-		try
-		{
-			$stmt = $user->runQuery("SELECT name, email FROM registration WHERE name=:uname OR email=:umail");
-			$stmt->execute(array(':uname'=>$uname, ':umail'=>$umail));
-			$row=$stmt->fetch(PDO::FETCH_ASSOC);
-				
-			if($row['name']==$uname) {
-				$error[] = "sorry username already taken !";
-			}
-			else if($row['email']==$umail) {
-				$error[] = "sorry email id already taken !";
-			}
-			else
-			{
-				if($user->register($uname,$umail,$upass)){	
-					$user->redirect('sign-up.php?joined');
-				}
-			}
-		}
-		catch(PDOException $e)
-		{
-			echo $e->getMessage();
+		//$sql="insert into registration values();"
+		$sql= mysqli_query($con,"insert into registration(name,email,image,password) values('$uname','$umail','$pic','$upass')");
+		if($sql)
+		{  
+            move_uploaded_file($tmp,$path);
+		   $error[] = "Registration successfully for login click on sign button";
+		   $icon="success";
+	       $class="success";	
 		}
 	}	
 }
@@ -73,7 +67,7 @@ if(isset($_POST['btn-signup']))
 
 <div class="container">
     	
-        <form method="post" class="form-signin">
+        <form method="post" class="form-signin" enctype="multipart/form-data">
             <h2 class="form-signin-heading">Sign up.</h2><hr />
             <?php
 			if(isset($error))
@@ -81,8 +75,8 @@ if(isset($_POST['btn-signup']))
 			 	foreach($error as $error)
 			 	{
 					 ?>
-                     <div class="alert alert-danger">
-                        <i class="glyphicon glyphicon-warning-sign"></i> &nbsp; <?php echo $error; ?>
+                     <div class="alert alert-<?php echo $class; ?>">
+                        <i class="glyphicon glyphicon-<?php echo $icon; ?>-sign"></i> &nbsp; <?php echo $error; ?>
                      </div>
                      <?php
 				}
@@ -105,6 +99,11 @@ if(isset($_POST['btn-signup']))
             <div class="form-group">
             	<input type="password" class="form-control" name="txt_upass" placeholder="Enter Password" />
             </div>
+            <div class="form-group">
+            	<input type="file"  name="img"  />
+            </div>
+
+
             <div class="clearfix"></div><hr />
             <div class="form-group">
             	<button type="submit" class="btn btn-primary" name="btn-signup">
@@ -112,7 +111,7 @@ if(isset($_POST['btn-signup']))
                 </button>
             </div>
             <br />
-            <label>have an account ! <a href="index.php">Sign In</a></label>
+            <label>have an account ! <a href="reg.php">Sign In</a></label>
         </form>
        </div>
 </div>

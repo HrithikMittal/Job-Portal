@@ -1,48 +1,91 @@
+<?php 
+    include("dbconfig.php");
+    session_start();
+?>
+<?php 
+if(isset($_GET["id"]))
+{   
+	
+    if($_SESSION["name"]=="")
+    {
+        header("location:reg.php");
 
-
-<?php
+    }
     
-    
-require_once("session.php");
-	
-	require_once("class.user.php");
-	$auth_user = new USER();
-	
-	
-	$user_id = $_SESSION['user_session'];
-	
-	$stmt = $auth_user->runQuery("SELECT * FROM registration WHERE usr_id=:usr_id");
-	$stmt->execute(array(":usr_id"=>$user_id));
-	
-	$userRow=$stmt->fetch(PDO::FETCH_ASSOC);
-	
-	$check  = new USER;
-	$get    = new USER;
-	$send   = new USER;
-	$retrieve = new USER;
-	$sends = new USER;
+}
 
-	
-   
-		
-	//fetching user comment by post_id
-	$commentts = $retrieve->user_comment($post_id);
-		
-	// fetching comments from database
-	$cmnt  = $retrieve->comments();
-	
-	
-	//check user fill  comment form
-			 	 
-			 if(isset($_POST['submit_comment'])){
-		       $comment  = $_POST['comment'];
-		
-					$sends->add_comments($post_id,$user_id,$comment);
-				}	 
-			 	 
-			 	 
 
 ?>
+<?php
+function timeAgo($time_ago){
+
+            $time_ago = strtotime($time_ago);
+            $cur_time   = time();
+            $time_elapsed   = $cur_time - $time_ago;
+            $seconds    = $time_elapsed ;
+            $minutes    = round($time_elapsed / 60 );
+            $hours      = round($time_elapsed / 3600);
+            $days       = round($time_elapsed / 86400 );
+            $weeks      = round($time_elapsed / 604800);
+            $months     = round($time_elapsed / 2600640 );
+            $years      = round($time_elapsed / 31207680 );
+            // Seconds
+            if($seconds <= 60){
+                return "just now";
+            }
+            //Minutes
+            else if($minutes <=60){
+                if($minutes==1){
+                    return "one minute ago";
+                }
+                else{
+                    return "$minutes minutes ago";
+                }
+            }
+            //Hours
+            else if($hours <=24){
+                if($hours==1){
+                    return "an hour ago";
+                }else{
+                    return "$hours hrs ago";
+                }
+            }
+            //Days
+            else if($days <= 7){
+                if($days==1){
+                    return "yesterday";
+                }else{
+                    return "$days days ago";
+                }
+            }
+            //Weeks
+            else if($weeks <= 4.3){
+                if($weeks==1){
+                    return "a week ago";
+                }else{
+                    return "$weeks weeks ago";
+                }
+            }
+            //Months
+            else if($months <=12){
+                if($months==1){
+                    return "a month ago";
+                }else{
+                    return "$months months ago";
+                }
+            }
+            //Years
+            else{
+                if($years==1){
+                    return "one year ago";
+                }else{
+                    return "$years years ago";
+                }
+            }
+        } 
+?>
+
+
 
 
 
@@ -111,9 +154,9 @@ require_once("session.php");
  <ul class="nav navbar-nav navbar-right">
   
 
- <li><a href="#"><span class="glyphicon glyphicon-comment" aria-hidden="true"></span> Notification </a></li>
+ <li><a href="#"><span class="glyphicon glyphicon-comment" aria-hidden="true"></span> Notification(0) </a></li>
 
- <li><a href="logout.php?logout=true"><span class="glyphicon glyphicon-off" aria-hidden="true"></span> Log Out</a></li>
+ <li><a href="logout1.php"><span class="glyphicon glyphicon-off" aria-hidden="true"></span> Log Out</a></li>
  </ul>
  <form class="navbar-form navbar-right" action="" method="GET">
  <div class="input-group">
@@ -195,20 +238,52 @@ require_once("session.php");
  <div class="container-fluid">
  <div class="row">
  <div class="col-lg-12">
- <br>
+ <div class="col-lg-4">
+		<div class="list-group" style="margin-left:0px">
+   <a href="user.php" class="list-group-item active" style="background-color:black;">
+    All task</a>
+  
+ <a href="ourskill.php" class="list-group-item">Profile
+  </a>
 
- </div>
- </div>
- <div class="row">
- <div class="col-lg-12">
-     
+  
+  </a>
+  <a href="my_task.php" class="list-group-item">My task
+  </a>
+  <a href="" data-toggle="modal" data-target="#squarespaceModal" class="list-group-item">
+  	Post Task
+  </a>
+  <a href="notification.php" class="list-group-item">
+  	Notification(<?php echo $count; ?>)
+  </a>
+  
+  <a href="changepass.php" class="list-group-item">Change Password
+  </a>
+  <a href="logout1.php" class="list-group-item">Log Out
+  </a>
+</div>
+		</div>
+ <div class="col-lg-8">
+  <?php
+$title = $_GET['s_title'];
+$p_id = $_GET['id'];
+
+$sql1=mysqli_query($con,"select * from posts where post_id='$p_id'");
+                    while($comnt1=mysqli_fetch_array($sql1)){
+                           $uid=$comnt1["usr_id_p"];
+                        }
+                        $sql2=mysqli_query($con,"select * from registration where usr_id='$uid'");
+                    while($comnt2=mysqli_fetch_array($sql2)){
+                           $im=$comnt2["image"];
+                        }
+?>   
       
 <div class="container">
     <div class="col-sm-8">
         <div class="panel panel-white post panel-shadow">
             <div class="post-heading">
                 <div class="pull-left image">
-                    <img src="http://bootdey.com/img/Content/user_1.jpg" class="img-circle avatar" alt="user profile image">
+                    <img src="user_images/<?php echo $im; ?>" class="img-circle avatar" alt="user profile image">
                 </div>
                 <div class="pull-left meta">
                     <div class="title h5">
@@ -221,27 +296,37 @@ require_once("session.php");
               
                <?php
 $title = $_GET['s_title'];
+$p_id = $_GET['id'];
+
 echo $title;
+
 ?>
              
    
           
                 
             </div>
-        	<form action="" method="post" enctype="multipart/form-data">
+        	<form action="comment.php" method="post">
 
             <div class="post-footer">
                 <div class="input-group"> 
-                    <input class="form-control" placeholder="Add a comment" type="text" name="comment">
-                   	<div class="btn-group" role="group">
-					<button type="submit" name="submit_comment"  class="btn btn-default btn-hover-green" >submit</button>
+                    <textarea class="form-control" cols="100" rows="10" placeholder="Add a comment" type="text" name="comment"></textarea>
+                    <input class="form-control"  type="hidden" name="uid" value="<?php echo $_SESSION['id']; ?>">
+                    <input class="form-control"  type="hidden" name="pid" value="<?php echo $p_id;?>">
+                   	<div class="btn-group" role="group" style="margin-top:5px">
+					<button type="submit" name="submit_comment"  class="btn btn-primary btn-hover-green" >Post Your Comment</button>
 				</div>
                 </div>
                 </form>
                 
-                	<?php foreach($cmnt as $comnt){
+                	<?php 
+                      $p_id = $_GET['id'];
+                      
+                     $sql=mysqli_query($con,"select * from comments where post_id_c='$p_id'");
+                    while($comnt=mysqli_fetch_array($sql)){
 							//fetching all posts
 							$time_ago = $comnt['comment_time'];
+
 						echo '
                 
                 <ul class="comments-list">
@@ -252,7 +337,7 @@ echo $title;
                         <div class="comment-body">
                             <div class="comment-heading">
                                 <h4 class="user">	'.$comnt['name'].'</h4>
-                                <h5 class="time">'.$get->timeAgo($time_ago).'</h5>
+                                <h5 class="time">'.timeAgo($time_ago).'</h5>
                             </div>
                             <p>'.$comnt['comment'].'</p>
                         </div>

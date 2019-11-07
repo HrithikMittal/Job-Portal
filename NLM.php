@@ -1,9 +1,9 @@
 <ul class="nav navbar-nav navbar-right">
   
 
- <li><a href="#"><span class="glyphicon glyphicon-comment" aria-hidden="true"></span> Notification </a></li>
 
- <li><a href="logout.php?logout=true"><span class="glyphicon glyphicon-off" aria-hidden="true"></span> Log Out</a></li>
+ <li><a href="reg.php"><span class="glyphicon glyphicon-on" aria-hidden="true"></span> Log In</a></li>
+ <li><a href="sign-up.php"><span class="glyphicon glyphicon-on" aria-hidden="true"></span> Sign Up</a></li>
  </ul>
  <form class="navbar-form navbar-right" action="#" method="GET">
  <div class="input-group">

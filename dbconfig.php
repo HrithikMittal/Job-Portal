@@ -1,27 +1,5 @@
 <?php
-class Database
-{   
-    private $host = "localhost";
-    private $db_name = "mydatabase";
-    private $username = "saujan";
-    private $password = "";
-    public $conn;
-     
-    public function dbConnection()
-	{
-     
-	    $this->conn = null;    
-        try
-		{
-            $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
-			$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);	
-        }
-		catch(PDOException $exception)
-		{
-            echo "Connection error: " . $exception->getMessage();
-        }
-         
-        return $this->conn;
-    }
-}
+$con=mysqli_connect("localhost","root","","mydata");
+//$con=mysqli_connect("localhost","root","saujan","mydata") or die(mysqli_error());
+error_reporting(1);
 ?>
